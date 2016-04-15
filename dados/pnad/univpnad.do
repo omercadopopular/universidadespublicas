@@ -107,7 +107,10 @@ log using universidade.log, replace
 	gen anosestudo2 = anosestudo * anosestudo 		
 	
 	// exclua as observações com renda familiar per capita atribuída como zero
+		// ou se a renda do trabalho principal for zero
 	drop if rfpc == 0 								
+	drop if rendtrabprinc == 0
+	drop if lnrend == 0
 	
 	// defina quem estudou em universidade privada
 	drop univpriv
@@ -148,3 +151,107 @@ if (`descriptive' == 1) {
 ///////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// 4.  MODELOS /////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
+
+// 4.1 Modelos para prefer a probabilidade de estudar em universidade pública
+
+if (`logit' == 1) {
+	
+
+	// 4.1.1 Modelo univariável
+	
+	preserve
+	
+		// rode o modelo 
+
+				logit univpub lnrfpc if idade > 17 & idade < 25 & univpriv != 1
+					outreg2 lnrfpc  /// 
+						using logit.xls, cttop(Correlacao) ///
+						lab dec(3)  replace		
+		
+		// grave os valores preditos
+		
+				predict univ_hat2
+				replace univ_hat2 = univ_hat2 * 100
+				
+		// calcule os valores marginais
+		
+				margins, dydx(*) at(lnrfpc=(3.5(0.5)9)) post
+				marginsplot
+		
+		// reduza a amostra para calcular gráfico
+
+		drop if rfpc > 20000
+		drop if rfpc < 100
+				
+		line univ_hat2 rfpc, sort  ///
+			title("Probabilidade", position(11) margin(vsmall)) ///
+			subtitle("de Ingresso na Universidade",  position(11) margin(vsmall)) ///
+			scheme(economist) name(test_hat, replace)
+				
+			
+		export delimited using "logitresults.csv", replace
+			
+	restore			
+
+				
+	// 4.2.2 Modelos multivariaveis
+	
+			// rode o modelo 
+
+			
+				logit univpub lnrfpc mulher negroind sul co nordeste norte urbano idade if idade > 17 & idade < 25 & univpriv != 1
+					outreg2 lnrfpc mulher negroind sul co nordeste norte urbano idade   /// 
+						using logit.xls, cttop(Completo) ///
+						lab dec(3)  		
+
+			// calcule os valores marginais
+				
+				margins, dydx(*) at(mulher=0 negroind=0 sul=0 co=0 nordeste=0 norte=0 urbano=0 (median) lnrfpc idade ) post
+				
+
+}
+
+
+// 4.2 Modelos para calcular o efeito do estudo na renda
+
+if (`linear' == 1) {
+
+		
+		preserve
+		
+		// restrinja a amostra a adultos
+		
+		drop if idade < 25
+		drop if idade > 65
+		
+		// modelo bivariado
+		
+		reg lnrend anosestudo, r
+			outreg2 anosestudo /// 
+			using resultsFull.xls, cttop(Correlacao) ///
+			lab dec(3)  replace		
+			
+		// modelo com experiência
+
+		reg lnrend anosestudo exp exp2, r
+			outreg2 anosestudo exp exp2 ///
+			using resultsFull.xls, cttop(Experiencia) ///
+			lab dec(3)
+			
+		// modelo sem dummies de indústria
+		
+		reg lnrend exp exp2 anosestudo mulher negroind metropolitana co sul nordeste norte, r 
+		outreg2 exp exp2 anosestudo mulher negroind metropolitana co sul nordeste norte ///
+			using resultsFull.xls, cttop(Sem Industria) ///
+			lab dec(3) 		
+			
+		// modelo completo
+
+		reg lnrend exp exp2 anosestudo mulher negroind metropolitana co sul nordeste norte dirigentes profisscienartes tecmedios servadm servicos agric forcarmadas prodbensservreparomanut, r 
+		outreg2 exp exp2 anosestudo mulher negroind metropolitana co sul nordeste norte dirigentes profisscienartes tecmedios servadm servicos agric forcarmadas prodbensservreparomanut  ///
+			using resultsFull.xls, cttop(Completo) ///
+			lab dec(3) 		
+		
+		restore
+			
+}
