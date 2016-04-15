@@ -68,15 +68,20 @@ MÉTODOS UTILIZADOS: Regressão Logística e Regressão Linear
 //////////////////// 1. ORGANIZAÇÃO DO ESPAÇO DE TRABALHO /////////////////////
 ///////////////////////////////////////////////////////////////////////////////
  
-capture log close 										// encerra todos os logs abertos
-clear 													// limpa a memória
-clear matrix 											// limpa a memória de matriz
-clear mata 												// limpa a memória de mata
-cd "U:\Research\Universidade" 							// define a pasta de trabalho
+// encerre todos os logs abertos
+capture log close 
+										
+// limpe a memória e libere as restrições
+clear 													
+clear matrix 											
+clear mata
 set more off  											
 set maxvar 32000
 set matsize 11000
-log using universidade.log, replace  					// escolhe o arquivo de logo
+
+// defina a pasta de trabalho e escolha o arquivo de log 
+cd "U:\Research\Universidade" 							
+log using universidade.log, replace
 
 ///////////////////////////////////////////////////////////////////////////////
 /////////////////////// 2. ORGANIZAÇÃO DO BANCO DE DADOS //////////////////////
@@ -86,16 +91,28 @@ log using universidade.log, replace  					// escolhe o arquivo de logo
 	
 	import delimited "PNAD2013.csv", varnames(1)
 	
-	gen lnrend = ln(rendtrabprinc) 					// crie o log da renda do trabalho principal
-	gen lnrfpc = ln(rfpc)							// crie o log da renda familiar per capita
-	gen exp = idade - comecotrab					// derive a experiência da idade - idade de ingresso na força de trabalho
-	gen exp2 = exp * exp 							// derive a experiência ao quadrado
-	gen anosestudo2 = anosestudo * anosestudo 		// derive a anos de estudo ao quadrado
-	drop if rfpc == 0 								// exclua as observações com renda familiar per capita atribuída como zero
+	// crie o log da renda do trabalho principal
+	gen lnrend = ln(rendtrabprinc)
 	
+	// crie o log da renda familiar per capita
+	gen lnrfpc = ln(rfpc)
+	
+	// derive a experiência da idade - idade de ingresso na força de trabalho
+	gen exp = idade - comecotrab
+	
+	// derive a experiência ao quadrado
+	gen exp2 = exp * exp 							
+	
+	// derive a anos de estudo ao quadrado
+	gen anosestudo2 = anosestudo * anosestudo 		
+	
+	// exclua as observações com renda familiar per capita atribuída como zero
+	drop if rfpc == 0 								
+	
+	// defina quem estudou em universidade privada
 	drop univpriv
 	gen univpriv = 0
-	replace univpriv = 1 if univ == 1 & univpub == 0 // defina quem estudou em universidade privada
+	replace univpriv = 1 if univ == 1 & univpub == 0 
 
 
 // 2.2 Rotule as variáveis
@@ -104,14 +121,20 @@ log using universidade.log, replace  					// escolhe o arquivo de logo
 		label var `z' "`l_`z''"
 	}
 
+
+
+	
 ///////////////////////////////////////////////////////////////////////////////
 //////////////////////// 3.  ESTATÍSTICAS DESCRIVITAS /////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
 if (`descriptive' == 1) {
 
-	sum rfpc if univpub == 1 & idade > 17 & idade < 25, detail 	// renda familiar per capita de jovens de universidade pública
-	sum rfpc if univ == 0  & idade > 17 & idade < 25, detail	// renda familiar per capita de jovens sem universidade
+	// renda familiar per capita de jovens de universidade pública
+	sum rfpc if univpub == 1 & idade > 17 & idade < 25, detail
+	
+	// renda familiar per capita de jovens sem universidade
+	sum rfpc if univ == 0  & idade > 17 & idade < 25, detail	
 
 	// T-tests para verificar significância estatística
 	
@@ -125,5 +148,3 @@ if (`descriptive' == 1) {
 ///////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// 4.  MODELOS /////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-
-
