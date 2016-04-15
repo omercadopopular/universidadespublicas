@@ -16,7 +16,8 @@ O Instituto Mercado Popular é um laboratório de políticas públicas. Nossa mi
 # Pastas
 
 1. /graficos
-   Contém CSVs para reprodução dos gráficos plotados na publicação.
+
+   Contém CSVs para reprodução dos gráficos plotados na publicação. Os gráficos estão numerados seguindo sua numeração na publicação: g1.csv para a Figura 1, g2.csv para a Figura 2 [...] gN.csv para a Figura N.
 
 2. /dados
    Contém pastas com bases de dados e códigos para as análises estatísticas utilizadas na publicação.
