@@ -103,3 +103,27 @@ log using universidade.log, replace  					// escolhe o arquivo de logo
 	foreach z in `labels' {
 		label var `z' "`l_`z''"
 	}
+
+///////////////////////////////////////////////////////////////////////////////
+//////////////////////// 3.  ESTATÍSTICAS DESCRIVITAS /////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+if (`descriptive' == 1) {
+
+	sum rfpc if univpub == 1 & idade > 17 & idade < 25, detail 	// renda familiar per capita de jovens de universidade pública
+	sum rfpc if univ == 0  & idade > 17 & idade < 25, detail	// renda familiar per capita de jovens sem universidade
+
+	// T-tests para verificar significância estatística
+	
+	foreach var in univpub univpriv univ {
+		di "`var'"
+		ttest rfpc if idade > 17 & idade < 25, by(`var')
+	}
+	
+}
+
+///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// 4.  MODELOS /////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+
